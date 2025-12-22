@@ -1,9 +1,12 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-@layer base {
-  body {
-    @apply bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 min-h-screen;
-  }
+@theme {
+  --color-mystic-purple: #6B46C1;
+  --color-mystic-dark: #1E1B4B;
+  --color-mystic-light: #A78BFA;
+}
+
+body {
+  background: linear-gradient(to bottom right, rgb(88 28 135), rgb(107 33 168), rgb(67 56 202));
+  min-height: 100vh;
 }
