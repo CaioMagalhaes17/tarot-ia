@@ -379,8 +379,31 @@ export function Tarot() {
         {!cardsRevealed && (
           <div className="relative overflow-x-auto overflow-y-visible pb-8" style={{ minHeight: '200px' }}>
             {isLoadingCards ? (
-              <div className="text-center py-8">
-                <div className="text-white text-lg">Carregando cartas...</div>
+              <div className="h-full px-4">
+                <div className="relative inline-flex items-end" style={{ height: '180px' }}>
+                  {Array.from({ length: 30 }).map((_, index) => {
+                    const leftOffset = index * 35; // Espaçamento menor para sobreposição
+                    const zIndex = 30 - index;
+                    
+                    return (
+                      <div
+                        key={`skeleton-${index}`}
+                        className="absolute animate-pulse"
+                        style={{
+                          left: `${leftOffset}px`,
+                          bottom: 0,
+                          zIndex: zIndex,
+                        }}
+                      >
+                        <div className="relative w-[80px]">
+                          <div className="w-[80px] h-[120px] bg-purple-900/50 rounded-lg border-2 border-purple-800/30 shadow-lg">
+                            <div className="w-full h-full bg-gradient-to-br from-purple-900/70 via-purple-800/50 to-purple-900/70 rounded-lg"></div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             ) : (
               <div className="h-full px-4">
