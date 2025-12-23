@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:3000';
+const API_BASE_URL = 'https://anon-pix.fly.dev';
 // http://localhost:3000
 // https://anon-pix.fly.dev
 
