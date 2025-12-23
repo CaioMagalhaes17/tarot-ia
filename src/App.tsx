@@ -7,12 +7,15 @@ import { Tarot } from './pages/Tarot/Tarot';
 import { Login } from './pages/Login/Login';
 import { Register } from './pages/Register/Register';
 import { Sessions } from './pages/Sessions/Sessions';
+import { SnowEffect } from './components/SnowEffect';
+
 
 function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <Routes>
+      <BrowserRouter>
+        <AuthProvider>
+          <SnowEffect snowflakeCount={20} active={true} />
+          <Routes>
           <Route
             path="/"
             element={
@@ -62,9 +65,9 @@ function App() {
               </DefaultLayout>
             }
           />
-        </Routes>
-      </AuthProvider>
-    </BrowserRouter>
+          </Routes>
+        </AuthProvider>
+      </BrowserRouter>
   );
 }
 

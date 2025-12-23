@@ -1,12 +1,13 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authApi, type User, type LoginRequest, type RegisterRequest } from '../services/api';
+import { authApi, type User, type LoginRequest, type RegisterRequest, type GoogleLoginRequest } from '../services/api';
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (data: LoginRequest, options?: { redirect?: boolean }) => Promise<void>;
+  loginWithGoogle: (data: GoogleLoginRequest, options?: { redirect?: boolean }) => Promise<void>;
   register: (data: RegisterRequest) => Promise<void>;
   logout: () => void;
   verifyEmail: (token: string) => Promise<void>;
@@ -55,6 +56,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const loginWithGoogle = async (data: GoogleLoginRequest, options?: { redirect?: boolean }) => {
+    const response = await authApi.loginWithGoogle(data);
+    
+    // Validar se o token existe antes de salvar
+    if (response.accessToken && response.accessToken.trim() !== '') {
+      localStorage.setItem('token', response.accessToken);
+      localStorage.setItem('user', JSON.stringify(response.user));
+      setUser(response.user);
+    } else {
+      throw new Error('Token não recebido do servidor');
+    }
+    
+    // Só redireciona se não for especificado ou se redirect for true
+    if (options?.redirect !== false) {
+      navigate('/');
+    }
+  };
+
   const register = async (data: RegisterRequest) => {
       await authApi.register(data);
       await login({ email: data.email, password: data.password });
@@ -81,6 +100,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAuthenticated: !!user,
         isLoading,
         login,
+        loginWithGoogle,
         register,
         logout,
         verifyEmail,

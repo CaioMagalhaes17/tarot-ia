@@ -12,24 +12,16 @@ export function Header() {
 
   return (
     <header className="bg-purple-950/80 backdrop-blur-md border-b border-purple-900/50 shadow-lg">
-      <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <nav className="container h-[90px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2 group">
-            <div className="text-3xl">🔮</div>
-            <span className="text-5xl font-bold text-white group-hover:text-purple-200 transition-colors font-display">
-              Tarot IA
-            </span>
+          <Link to="/" className="flex items-center space-x-2 mt-10 group">
+            <img src="/logo.png" alt="Tarot IA" className="w-20 h-20" />
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-6">
-            <Link
-              to="/"
-              className="text-purple-100 hover:text-white transition-colors font-medium"
-            >
-              Início
-            </Link>
+          <div className="hidden md:flex items-center space-x-6 mt-6 text-xl">
+            
             <Link
               to="/tarot"
               className="text-purple-100 hover:text-white transition-colors font-medium"
@@ -51,18 +43,18 @@ export function Header() {
                 >
                   Minhas Sessões
                 </Link>
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-4 ml-20">
                   <div className="flex items-center space-x-2">
                     <div className="w-8 h-8 rounded-full bg-purple-800 flex items-center justify-center text-white font-semibold">
                       {user?.name?.charAt(0).toUpperCase() || 'U'}
                     </div>
-                    <span className="text-purple-100 text-sm">
+                    <span className="text-purple-100 font-bold">
                       {user?.name || 'Usuário'}
                     </span>
                   </div>
                   <button
                     onClick={handleLogout}
-                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-medium"
+                    className="px-4 py-2 bg-red-600 hover:bg-red-700 ml-5 text-white rounded-lg transition-colors font-medium"
                   >
                     Sair
                   </button>

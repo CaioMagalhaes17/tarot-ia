@@ -14,6 +14,12 @@ export interface LoginResponse {
   };
 }
 
+export interface GoogleLoginRequest {
+  token: string;
+}
+
+export interface GoogleLoginResponse extends LoginResponse {}
+
 export interface RegisterRequest {
   name: string;
   email: string;
