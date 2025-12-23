@@ -19,7 +19,7 @@ export function NotFound() {
       <div className="flex flex-col sm:flex-row gap-4">
         <Link
           to="/"
-          className="px-8 py-4 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold text-lg transition-all transform hover:scale-105 shadow-lg"
+          className="px-8 py-4 bg-purple-800 hover:bg-purple-900 text-white rounded-lg font-semibold text-lg transition-all transform hover:scale-105 shadow-lg"
         >
           Voltar ao Início
         </Link>

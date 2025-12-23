@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { Header } from '../Header/Header';
 
 interface DefaultLayoutProps {
@@ -12,7 +12,7 @@ export function DefaultLayout({ children }: DefaultLayoutProps) {
       <main className="flex-1 container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {children}
       </main>
-      <footer className="bg-purple-900/80 backdrop-blur-md border-t border-purple-700/50 mt-auto">
+      <footer className="bg-purple-950/80 backdrop-blur-md border-t border-purple-900/50 mt-auto">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <div className="flex items-center space-x-2">

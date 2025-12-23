@@ -4,7 +4,7 @@ export function Home() {
   return (
     <div className="max-w-4xl mx-auto">
       <div className="text-center mb-12">
-        <h1 className="text-5xl md:text-6xl font-bold text-white mb-4">
+        <h1 className="text-6xl md:text-10xl font-bold text-white mb-4">
           🔮 Tarot IA
         </h1>
         <p className="text-xl md:text-2xl text-purple-100 mb-8">
@@ -16,7 +16,7 @@ export function Home() {
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link
             to="/tarot"
-            className="px-8 py-4 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold text-lg transition-all transform hover:scale-105 shadow-lg"
+            className="px-8 py-4 bg-purple-800 hover:bg-purple-900 text-white rounded-lg font-semibold text-lg transition-all transform hover:scale-105 shadow-lg"
           >
             Começar Leitura
           </Link>
@@ -30,29 +30,38 @@ export function Home() {
       </div>
 
       <div className="grid md:grid-cols-3 gap-6 mt-16">
-        <div className="bg-purple-800/50 backdrop-blur-sm rounded-lg p-6 border border-purple-700/50">
+        <Link
+          to="/tarot"
+          className="bg-purple-950/50 backdrop-blur-sm rounded-lg p-6 border flex flex-col items-center border-purple-900/50 hover:border-purple-700/50 transition-all hover:transform hover:scale-105 cursor-pointer"
+        >
+          <div className="text-4xl mb-4">🔮</div>
+          <h3 className="text-6xl font-bold text-white mb-3">Tarot</h3>
+          <p className="text-purple-200 text-center">
+            Leitura completa de tarot com múltiplas cartas. Escolha de 1 a 10 cartas do baralho completo de 78 cartas e receba uma interpretação detalhada e personalizada sobre sua pergunta ou tema.
+          </p>
+        </Link>
+
+        <Link
+          to="/amor"
+          className="bg-purple-950/50 backdrop-blur-sm rounded-lg p-6 border flex flex-col items-center border-purple-900/50 hover:border-purple-700/50 transition-all hover:transform hover:scale-105 cursor-pointer"
+        >
+          <div className="text-4xl mb-4">💕</div>
+          <h3 className="text-6xl font-bold text-white mb-3">Amor</h3>
+          <p className="text-purple-200 text-center">
+            Leitura especializada em relacionamentos e questões do coração. Descubra insights sobre seu relacionamento atual, futuro amoroso ou questões sentimentais através das cartas.
+          </p>
+        </Link>
+
+        <Link
+          to="/uma-carta"
+          className="bg-purple-950/50 backdrop-blur-sm rounded-lg p-6 border flex flex-col items-center border-purple-900/50 hover:border-purple-700/50 transition-all hover:transform hover:scale-105 cursor-pointer"
+        >
           <div className="text-4xl mb-4">🃏</div>
-          <h3 className="text-xl font-bold text-white mb-2">78 Cartas Completas</h3>
-          <p className="text-purple-200">
-            Baralho completo de Tarot com Arcanos Maiores e Menores
+          <h3 className="text-6xl font-bold text-white mb-3">Uma Carta</h3>
+          <p className="text-purple-200 text-center">
+            Leitura rápida e direta com uma única carta. Ideal para respostas rápidas e orientações do dia. Uma carta, uma mensagem clara e objetiva para guiar seu caminho.
           </p>
-        </div>
-
-        <div className="bg-purple-800/50 backdrop-blur-sm rounded-lg p-6 border border-purple-700/50">
-          <div className="text-4xl mb-4">🤖</div>
-          <h3 className="text-xl font-bold text-white mb-2">IA Avançada</h3>
-          <p className="text-purple-200">
-            Interpretações profundas usando OpenAI GPT-3.5
-          </p>
-        </div>
-
-        <div className="bg-purple-800/50 backdrop-blur-sm rounded-lg p-6 border border-purple-700/50">
-          <div className="text-4xl mb-4">⭐</div>
-          <h3 className="text-xl font-bold text-white mb-2">24/7 Disponível</h3>
-          <p className="text-purple-200">
-            Acesse suas leituras a qualquer momento do dia
-          </p>
-        </div>
+        </Link>
       </div>
     </div>
   );

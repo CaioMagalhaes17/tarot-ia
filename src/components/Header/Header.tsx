@@ -1,26 +1,23 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useState } from 'react';
+import { useAuth } from '../../contexts/AuthContext';
 
 export function Header() {
-  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  // TODO: Implementar autenticação real
-  const isAuthenticated = false;
-  const user = null;
+  const { isAuthenticated, user, logout } = useAuth();
 
   const handleLogout = () => {
-    // TODO: Implementar logout
-    navigate('/login');
+    logout();
   };
 
   return (
-    <header className="bg-purple-900/80 backdrop-blur-md border-b border-purple-700/50 shadow-lg">
+    <header className="bg-purple-950/80 backdrop-blur-md border-b border-purple-900/50 shadow-lg">
       <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2 group">
             <div className="text-3xl">🔮</div>
-            <span className="text-xl font-bold text-white group-hover:text-purple-200 transition-colors">
+            <span className="text-5xl font-bold text-white group-hover:text-purple-200 transition-colors font-display">
               Tarot IA
             </span>
           </Link>
@@ -56,7 +53,7 @@ export function Header() {
                 </Link>
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center space-x-2">
-                    <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center text-white font-semibold">
+                    <div className="w-8 h-8 rounded-full bg-purple-800 flex items-center justify-center text-white font-semibold">
                       {user?.name?.charAt(0).toUpperCase() || 'U'}
                     </div>
                     <span className="text-purple-100 text-sm">
@@ -81,7 +78,7 @@ export function Header() {
                 </Link>
                 <Link
                   to="/register"
-                  className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-medium"
+                  className="px-4 py-2 bg-purple-800 hover:bg-purple-900 text-white rounded-lg transition-colors font-medium"
                 >
                   Cadastrar
                 </Link>
@@ -122,7 +119,7 @@ export function Header() {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden py-4 border-t border-purple-700/50">
+          <div className="md:hidden py-4 border-t border-purple-900/50">
             <div className="flex flex-col space-y-4">
               <Link
                 to="/"
@@ -155,9 +152,9 @@ export function Header() {
                   >
                     Minhas Sessões
                   </Link>
-                  <div className="pt-4 border-t border-purple-700/50">
+                  <div className="pt-4 border-t border-purple-900/50">
                     <div className="flex items-center space-x-2 px-2 py-2">
-                      <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center text-white font-semibold">
+                      <div className="w-8 h-8 rounded-full bg-purple-800 flex items-center justify-center text-white font-semibold">
                         {user?.name?.charAt(0).toUpperCase() || 'U'}
                       </div>
                       <span className="text-purple-100 text-sm">
@@ -176,7 +173,7 @@ export function Header() {
                   </div>
                 </>
               ) : (
-                <div className="pt-4 border-t border-purple-700/50 flex flex-col space-y-2">
+                <div className="pt-4 border-t border-purple-900/50 flex flex-col space-y-2">
                   <Link
                     to="/login"
                     className="px-4 py-2 text-purple-100 hover:text-white transition-colors font-medium text-center"
@@ -186,7 +183,7 @@ export function Header() {
                   </Link>
                   <Link
                     to="/register"
-                    className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-medium text-center"
+                    className="px-4 py-2 bg-purple-800 hover:bg-purple-900 text-white rounded-lg transition-colors font-medium text-center"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Cadastrar

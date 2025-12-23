@@ -68,11 +68,194 @@ A aplicação oferece três planos de assinatura com diferentes limites de uso:
 
 ### Principais Entidades de Domínio
 
-- **TarotSession**: Representa uma sessão de tarot do usuário
-- **TarotCard**: Valor objeto para cartas do tarot (com nome, posição e orientação)
-- **SubscriptionPlan**: Planos de assinatura disponíveis
-- **Subscription**: Assinatura ativa de um usuário
-- **DailyUsage**: Controle de uso diário por serviço
+#### 👤 User (Usuário)
+
+Representa um usuário do sistema.
+
+**Propriedades:**
+
+- `id`: Identificador único do usuário
+- `name`: Nome do usuário
+- `email`: Email do usuário (usado para login)
+- `passwordHash`: Hash da senha (bcrypt)
+- `createdAt`: Data de criação da conta
+- `emailVerified`: Indica se o email foi verificado
+- `emailVerificationToken`: Token para verificação de email (null após verificação)
+
+**Métodos Principais:**
+
+- `create()`: Cria um novo usuário não verificado
+- `createVerified()`: Cria um usuário já verificado
+- `verifyEmail()`: Marca o email como verificado
+
+#### 🃏 TarotSession (Sessão de Tarot)
+
+Representa uma sessão de consulta de tarot do usuário.
+
+**Propriedades:**
+
+- `id`: Identificador único da sessão
+- `userId`: ID do usuário proprietário
+- `theme`: Tema/pergunta da sessão
+- `status`: Status da sessão (enum `TarotSessionStatus`)
+- `cards`: Array de cartas escolhidas (`TarotCard[]`)
+- `interpretation`: Texto da interpretação gerada por IA (null até ser interpretada)
+- `createdAt`: Data de criação da sessão
+- `cardsDrawnAt`: Data em que as cartas foram escolhidas (null até serem escolhidas)
+- `interpretedAt`: Data em que a sessão foi interpretada (null até ser interpretada)
+
+**Status Possíveis (`TarotSessionStatus`):**
+
+- `CREATED`: Sessão criada, aguardando escolha de cartas
+- `CARDS_DRAWN`: Cartas escolhidas, aguardando interpretação
+- `INTERPRETED`: Sessão completa com interpretação
+
+**Métodos Principais:**
+
+- `create()`: Cria uma nova sessão
+- `drawCards()`: Adiciona cartas escolhidas à sessão
+- `interpret()`: Marca a sessão como interpretada com o resultado da IA
+- `canBeInterpreted()`: Verifica se pode ser interpretada
+- `hasDrawnCards()`: Verifica se já possui cartas
+- `isInterpreted()`: Verifica se já foi interpretada
+
+#### 🎴 TarotCard (Carta de Tarot)
+
+Value Object imutável que representa uma carta do tarot escolhida em uma sessão.
+
+**Propriedades:**
+
+- `name`: Nome da carta (ex: "The Fool", "Ace of Wands")
+- `position`: Posição da carta na leitura (1, 2, 3, ...)
+- `isReversed`: Indica se a carta está invertida/reversa
+
+**Métodos Principais:**
+
+- `getDisplayName()`: Retorna nome formatado com posição e orientação
+
+#### 📋 SubscriptionPlan (Plano de Assinatura)
+
+Representa um plano de assinatura disponível no catálogo.
+
+**Propriedades:**
+
+- `id`: Identificador único do plano
+- `name`: Nome do plano (ex: "Free", "Premium", "Ilimitado")
+- `description`: Descrição opcional do plano
+- `price`: Preço em centavos
+- `billingPeriod`: Período de cobrança (enum `BillingPeriod`)
+- `features`: Array de limites por serviço (`ServiceLimit[]`)
+- `globalDailyLimit`: Limite global diário (null = sem limite global, -1 = ilimitado)
+- `isActive`: Indica se o plano está ativo
+- `createdAt`: Data de criação
+
+**Períodos de Cobrança (`BillingPeriod`):**
+
+- `MONTHLY`: Mensal
+- `YEARLY`: Anual
+
+**Métodos Principais:**
+
+- `create()`: Cria um novo plano
+- `getServiceLimit()`: Busca limite de um serviço específico
+- `hasServiceLimit()`: Verifica se tem limite para um serviço
+- `isFree()`: Verifica se é gratuito
+- `hasGlobalDailyLimit()`: Verifica se tem limite global
+- `isGlobalDailyUnlimited()`: Verifica se é ilimitado globalmente
+- `isWithinGlobalDailyLimit()`: Verifica se valor está dentro do limite
+
+#### 💳 Subscription (Assinatura)
+
+Representa a assinatura ativa de um usuário a um plano.
+
+**Propriedades:**
+
+- `id`: Identificador único da assinatura
+- `userId`: ID do usuário assinante
+- `planId`: ID do plano de assinatura
+- `status`: Status da assinatura (enum `SubscriptionStatus`)
+- `startDate`: Data de início da assinatura
+- `endDate`: Data de término (null = recorrente sem expiração)
+- `cancelledAt`: Data de cancelamento (null se não cancelada)
+- `createdAt`: Data de criação
+- `paymentId`: ID do pagamento no gateway (null se não houver)
+
+**Status Possíveis (`SubscriptionStatus`):**
+
+- `ACTIVE`: Assinatura ativa
+- `CANCELLED`: Assinatura cancelada
+- `EXPIRED`: Assinatura expirada
+- `TRIAL`: Período de trial
+- `PENDING_PAYMENT`: Aguardando confirmação de pagamento (PIX/Boleto)
+
+**Métodos Principais:**
+
+- `create()`: Cria nova assinatura ativa
+- `createTrial()`: Cria assinatura de trial
+- `cancel()`: Cancela a assinatura
+- `expire()`: Marca como expirada
+- `activate()`: Ativa após confirmação de pagamento
+- `isActive()`: Verifica se está ativa (ACTIVE ou TRIAL)
+- `isExpired()`: Verifica se está expirada
+- `isCancelled()`: Verifica se foi cancelada
+
+#### 📊 DailyUsage (Uso Diário)
+
+Representa o uso diário de um serviço por um usuário, usado para rastrear limites.
+
+**Propriedades:**
+
+- `id`: Identificador único do registro
+- `userId`: ID do usuário
+- `serviceName`: Nome do serviço utilizado
+- `date`: Data do uso (normalizada para meia-noite, apenas data)
+- `count`: Contador de uso no dia
+- `createdAt`: Data de criação do registro
+
+**Métodos Principais:**
+
+- `create()`: Cria novo registro de uso diário
+- `increment()`: Incrementa o contador de uso
+- `isToday()`: Verifica se o registro é para hoje
+- `normalizeDate()`: Normaliza data para meia-noite (método estático)
+
+#### 🔧 ServiceLimit (Limite de Serviço)
+
+Value Object que representa o limite de uso de um serviço específico dentro de um plano.
+
+**Propriedades:**
+
+- `serviceName`: Nome do serviço
+- `dailyLimit`: Limite diário (-1 = ilimitado)
+- `monthlyLimit`: Limite mensal (null = sem limite, -1 = ilimitado)
+
+**Métodos Principais:**
+
+- `isDailyUnlimited()`: Verifica se limite diário é ilimitado
+- `isMonthlyUnlimited()`: Verifica se limite mensal é ilimitado
+- `hasMonthlyLimit()`: Verifica se há limite mensal configurado
+- `isWithinDailyLimit()`: Verifica se valor está dentro do limite diário
+- `isWithinMonthlyLimit()`: Verifica se valor está dentro do limite mensal
+- `getRemainingDaily()`: Retorna limite restante diário
+
+#### 🔔 NotificationPreferences (Preferências de Notificação)
+
+Representa as preferências de notificação de um usuário.
+
+**Propriedades:**
+
+- `id`: Identificador único
+- `userId`: ID do usuário
+- `receiveEmailNotifications`: Se o usuário recebe notificações por email
+- `notifyReceiverByEmail`: Se deve notificar um destinatário alternativo
+- `receiverEmail`: Email do destinatário alternativo (null se não houver)
+- `createdAt`: Data de criação
+- `updatedAt`: Data da última atualização
+
+**Métodos Principais:**
+
+- `create()`: Cria novas preferências
+- `update()`: Atualiza preferências existentes
 
 ### Baralho de Tarot
 
@@ -87,21 +270,25 @@ Cada carta pode aparecer em orientação **Normal** ou **Reversa** (30% de chanc
 ## Fluxo de Uso
 
 1. **Cadastro e Autenticação**
+
    - Usuário se cadastra na plataforma
    - Recebe email de verificação
    - Faz login e recebe token JWT
 
 2. **Assinatura**
+
    - Usuário escolhe um plano (Free, Premium ou Ilimitado)
    - Para planos pagos, realiza pagamento via cartão ou PIX
    - Assinatura é ativada automaticamente após confirmação
 
 3. **Criação de Sessão**
+
    - Usuário cria uma sessão de tarot com sua pergunta/tema
    - Sistema verifica limites do plano
    - Sessão é criada e aguarda escolha de cartas pelo usuário
 
 4. **Seleção e Interpretação de Cartas**
+
    - Usuário visualiza todas as 78 cartas disponíveis (com verso)
    - Usuário clica e escolhe as cartas desejadas (1 a 10 cartas)
    - Frontend valida a seleção e envia os IDs das cartas escolhidas
