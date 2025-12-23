@@ -186,7 +186,7 @@ export function PlansModal({ isOpen, onClose }: PlansModalProps) {
                   )}
                   
                   {!plansMinimized && (
-                    <p className="text-purple-200 text-center text-lg">
+                    <p className="text-purple-200 text-center text-2xl mb-5">
                       Você atingiu o limite diário do seu plano. Escolha um plano para continuar:
                     </p>
                   )}
@@ -291,8 +291,8 @@ export function PlansModal({ isOpen, onClose }: PlansModalProps) {
                     
                     {qrCodeExpanded && (
                       <div className="bg-purple-900/50 backdrop-blur-sm rounded-lg p-6 border border-purple-800/50">
-                        <h3 className="text-2xl font-bold text-white mb-4 text-center">
-                          Escaneie o QR Code para pagar
+                        <h3 className="text-4xl font-bold text-white mb-4 text-center">
+                          Escaneie o QR Code
                         </h3>
                         
                         <div className="flex flex-col items-center space-y-4">

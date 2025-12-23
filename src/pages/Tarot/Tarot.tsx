@@ -502,7 +502,9 @@ export function Tarot() {
         
 
         <div className="text-center">
-          <button
+          {!cardsRevealed && !cardsRevealed ? (
+            <>
+            <button
             type="submit"
             disabled={
               isCreatingSession || 
@@ -517,6 +519,7 @@ export function Tarot() {
                 : 'bg-purple-800/50 text-purple-400 cursor-not-allowed opacity-50'
             }`}
           >
+
             {isCreatingSession 
               ? 'Criando sessão...' 
               : isDrawingCards
@@ -526,6 +529,9 @@ export function Tarot() {
                   : 'Confirmar Seleção e Continuar'
             }
           </button>
+            </>     
+          ) : ''}
+          
         </div>
       </form>
 
