@@ -19,11 +19,25 @@ export function Login() {
   const navigate = useNavigate();
 
   const handleCredentialResponse = useCallback(async (response: any) => {
+    console.log('Google credential response received:', response);
     setError('');
     setIsLoading(true);
+    
     try {
+      // Verificar se é um erro do Google
+      if (response.error) {
+        console.error('Google Sign-In error:', response.error);
+        throw new Error(`Erro do Google: ${response.error}${response.error_description ? ' - ' + response.error_description : ''}`);
+      }
+      
+      if (!response || !response.credential) {
+        throw new Error('Resposta do Google inválida: token não recebido');
+      }
+      
+      console.log('Sending idToken to backend:', response.credential.substring(0, 50) + '...');
       await loginWithGoogle({ idToken: response.credential }, { redirect: true });
     } catch (err) {
+      console.error('Error in Google login:', err);
       setError(err instanceof Error ? err.message : 'Erro ao fazer login com Google');
       setIsLoading(false);
     }
@@ -32,28 +46,39 @@ export function Login() {
   useEffect(() => {
     // Inicializar Google Identity Services quando o componente montar
     const initializeGoogleSignIn = () => {
-      if (window.google) {
-        window.google.accounts.id.initialize({
-          client_id: GOOGLE_CLIENT_ID,
-          callback: handleCredentialResponse,
-        });
+      if (window.google && window.google.accounts) {
+        try {
+          window.google.accounts.id.initialize({
+            client_id: GOOGLE_CLIENT_ID,
+            callback: handleCredentialResponse,
+          });
+          console.log('Google Identity Services initialized successfully');
+        } catch (error) {
+          console.error('Error initializing Google Identity Services:', error);
+          setError('Erro ao inicializar Google Sign-In');
+        }
       }
     };
 
     // Verificar se o script do Google já foi carregado
-    if (window.google) {
+    if (window.google && window.google.accounts) {
       initializeGoogleSignIn();
     } else {
       // Aguardar o script carregar
+      let attempts = 0;
+      const maxAttempts = 50; // 5 segundos (50 * 100ms)
+      
       const checkGoogle = setInterval(() => {
-        if (window.google) {
+        attempts++;
+        if (window.google && window.google.accounts) {
           initializeGoogleSignIn();
+          clearInterval(checkGoogle);
+        } else if (attempts >= maxAttempts) {
+          console.error('Google Identity Services script failed to load');
+          setError('Google Sign-In não está disponível. Por favor, recarregue a página.');
           clearInterval(checkGoogle);
         }
       }, 100);
-
-      // Timeout de segurança
-      setTimeout(() => clearInterval(checkGoogle), 5000);
     }
   }, [handleCredentialResponse]);
 
@@ -73,8 +98,28 @@ export function Login() {
   };
 
   const handleGoogleLogin = () => {
-    if (window.google && window.google.accounts) {
-      window.google.accounts.id.prompt();
+    if (window.google && window.google.accounts && window.google.accounts.id) {
+      try {
+        // Usar prompt com callback para capturar erros e notificações
+        window.google.accounts.id.prompt((notification: any) => {
+          if (notification.isNotDisplayed()) {
+            const reason = notification.getNotDisplayedReason();
+            console.warn('Google One Tap not displayed. Reason:', reason);
+            if (reason === 'browser_not_supported' || reason === 'invalid_client') {
+              setError('Navegador não suportado ou configuração inválida do Google Sign-In');
+            }
+          } else if (notification.isSkippedMoment()) {
+            const reason = notification.getSkippedMomentReason();
+            console.warn('Google One Tap skipped. Reason:', reason);
+          } else if (notification.isDismissedMoment()) {
+            const reason = notification.getDismissedMomentReason();
+            console.warn('Google One Tap dismissed. Reason:', reason);
+          }
+        });
+      } catch (error) {
+        console.error('Error calling Google prompt:', error);
+        setError('Erro ao abrir o Google Sign-In. Tente novamente.');
+      }
     } else {
       setError('Google Sign-In não está disponível. Por favor, recarregue a página.');
     }

@@ -48,19 +48,48 @@ class ApiClient {
       Authorization: headers['Authorization'] ? 'Bearer ***' : 'none' 
     });
 
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      ...options,
-      headers,
+    console.log(`Making request to: ${API_BASE_URL}${endpoint}`, {
+      method: options.method || 'GET',
+      headers: { ...headers, Authorization: headers['Authorization'] ? 'Bearer ***' : 'none' },
     });
 
+    let response: Response;
+    try {
+      response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        ...options,
+        headers,
+      });
+    } catch (networkError) {
+      console.error('Network error:', networkError);
+      throw new Error('Erro de conexão. Verifique sua internet e tente novamente.');
+    }
+
+    console.log(`Response status: ${response.status} ${response.statusText}`);
+
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Erro na requisição' }));
-      const errorWithStatus = new Error(error.message || `Erro: ${response.statusText}`);
+      let errorData;
+      try {
+        const text = await response.text();
+        console.error('Error response body:', text);
+        errorData = text ? JSON.parse(text) : { message: 'Erro na requisição' };
+      } catch (parseError) {
+        console.error('Error parsing error response:', parseError);
+        errorData = { message: `Erro: ${response.statusText} (${response.status})` };
+      }
+      
+      const errorWithStatus = new Error(errorData.message || `Erro: ${response.statusText}`);
       (errorWithStatus as any).status = response.status;
       throw errorWithStatus;
     }
 
-    return response.json();
+    try {
+      const data = await response.json();
+      console.log('Response data received');
+      return data;
+    } catch (parseError) {
+      console.error('Error parsing success response:', parseError);
+      throw new Error('Resposta inválida do servidor');
+    }
   }
 }
 

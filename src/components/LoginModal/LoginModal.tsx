@@ -25,13 +25,27 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
   const { login, loginWithGoogle } = useAuth();
 
   const handleCredentialResponse = useCallback(async (response: any) => {
+    console.log('Google credential response received:', response);
     setError('');
     setIsLoading(true);
+    
     try {
+      // Verificar se é um erro do Google
+      if (response.error) {
+        console.error('Google Sign-In error:', response.error);
+        throw new Error(`Erro do Google: ${response.error}${response.error_description ? ' - ' + response.error_description : ''}`);
+      }
+      
+      if (!response || !response.credential) {
+        throw new Error('Resposta do Google inválida: token não recebido');
+      }
+      
+      console.log('Sending idToken to backend:', response.credential.substring(0, 50) + '...');
       await loginWithGoogle({ idToken: response.credential }, { redirect: false });
       onLoginSuccess?.();
       onClose();
     } catch (err) {
+      console.error('Error in Google login:', err);
       setError(err instanceof Error ? err.message : 'Erro ao fazer login com Google');
       setIsLoading(false);
     }
@@ -41,28 +55,39 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
     // Inicializar Google Identity Services quando o modal abrir
     if (isOpen) {
       const initializeGoogleSignIn = () => {
-        if (window.google) {
-          window.google.accounts.id.initialize({
-            client_id: GOOGLE_CLIENT_ID,
-            callback: handleCredentialResponse,
-          });
+        if (window.google && window.google.accounts) {
+          try {
+            window.google.accounts.id.initialize({
+              client_id: GOOGLE_CLIENT_ID,
+              callback: handleCredentialResponse,
+            });
+            console.log('Google Identity Services initialized successfully in modal');
+          } catch (error) {
+            console.error('Error initializing Google Identity Services:', error);
+            setError('Erro ao inicializar Google Sign-In');
+          }
         }
       };
 
       // Verificar se o script do Google já foi carregado
-      if (window.google) {
+      if (window.google && window.google.accounts) {
         initializeGoogleSignIn();
       } else {
         // Aguardar o script carregar
+        let attempts = 0;
+        const maxAttempts = 50; // 5 segundos (50 * 100ms)
+        
         const checkGoogle = setInterval(() => {
-          if (window.google) {
+          attempts++;
+          if (window.google && window.google.accounts) {
             initializeGoogleSignIn();
+            clearInterval(checkGoogle);
+          } else if (attempts >= maxAttempts) {
+            console.error('Google Identity Services script failed to load');
+            setError('Google Sign-In não está disponível. Por favor, recarregue a página.');
             clearInterval(checkGoogle);
           }
         }, 100);
-
-        // Timeout de segurança
-        setTimeout(() => clearInterval(checkGoogle), 5000);
       }
     }
   }, [isOpen, handleCredentialResponse]);
