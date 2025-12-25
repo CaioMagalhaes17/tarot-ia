@@ -1,7 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useGoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../../contexts/AuthContext';
+
+declare global {
+  interface Window {
+    google: any;
+  }
+}
+
+const GOOGLE_CLIENT_ID = '767695614738-ocj09in8rq8t101jbq88tij91kai406p.apps.googleusercontent.com';
 
 export function Login() {
   const [email, setEmail] = useState('');
@@ -10,6 +17,45 @@ export function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
+
+  const handleCredentialResponse = useCallback(async (response: any) => {
+    setError('');
+    setIsLoading(true);
+    try {
+      await loginWithGoogle({ idToken: response.credential }, { redirect: true });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao fazer login com Google');
+      setIsLoading(false);
+    }
+  }, [loginWithGoogle]);
+
+  useEffect(() => {
+    // Inicializar Google Identity Services quando o componente montar
+    const initializeGoogleSignIn = () => {
+      if (window.google) {
+        window.google.accounts.id.initialize({
+          client_id: GOOGLE_CLIENT_ID,
+          callback: handleCredentialResponse,
+        });
+      }
+    };
+
+    // Verificar se o script do Google já foi carregado
+    if (window.google) {
+      initializeGoogleSignIn();
+    } else {
+      // Aguardar o script carregar
+      const checkGoogle = setInterval(() => {
+        if (window.google) {
+          initializeGoogleSignIn();
+          clearInterval(checkGoogle);
+        }
+      }, 100);
+
+      // Timeout de segurança
+      setTimeout(() => clearInterval(checkGoogle), 5000);
+    }
+  }, [handleCredentialResponse]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,22 +72,13 @@ export function Login() {
     }
   };
 
-  const handleGoogleLogin = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
-      setError('');
-      setIsLoading(true);
-      try {
-        await loginWithGoogle({ token: tokenResponse.access_token }, { redirect: true });
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Erro ao fazer login com Google');
-        setIsLoading(false);
-      }
-    },
-    onError: () => {
-      setError('Erro ao autenticar com Google');
-      setIsLoading(false);
-    },
-  });
+  const handleGoogleLogin = () => {
+    if (window.google && window.google.accounts) {
+      window.google.accounts.id.prompt();
+    } else {
+      setError('Google Sign-In não está disponível. Por favor, recarregue a página.');
+    }
+  };
 
   return (
     <div className="max-w-md mx-auto">
@@ -114,7 +151,7 @@ export function Login() {
 
           <button
             type="button"
-            onClick={() => handleGoogleLogin()}
+            onClick={handleGoogleLogin}
             disabled={isLoading}
             className={`w-full mt-4 px-8 py-4 rounded-lg font-semibold text-lg transition-all flex items-center justify-center gap-3 ${
               isLoading

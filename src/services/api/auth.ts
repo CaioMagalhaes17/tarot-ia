@@ -18,7 +18,7 @@ export const authApi = {
   },
 
   async loginWithGoogle(data: GoogleLoginRequest): Promise<GoogleLoginResponse> {
-    return apiClient.request<GoogleLoginResponse>('/users/auth/google', {
+    return apiClient.request<GoogleLoginResponse>('/users/login/google', {
       method: 'POST',
       body: JSON.stringify(data),
     });

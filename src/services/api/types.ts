@@ -15,7 +15,7 @@ export interface LoginResponse {
 }
 
 export interface GoogleLoginRequest {
-  token: string;
+  idToken: string;
 }
 
 export interface GoogleLoginResponse extends LoginResponse {}

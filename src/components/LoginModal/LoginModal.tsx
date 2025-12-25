@@ -1,8 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { useGoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../../contexts/AuthContext';
 import { Modal } from '../Modal/Modal';
+
+declare global {
+  interface Window {
+    google: any;
+  }
+}
+
+const GOOGLE_CLIENT_ID = '767695614738-ocj09in8rq8t101jbq88tij91kai406p.apps.googleusercontent.com';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -16,6 +23,49 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { login, loginWithGoogle } = useAuth();
+
+  const handleCredentialResponse = useCallback(async (response: any) => {
+    setError('');
+    setIsLoading(true);
+    try {
+      await loginWithGoogle({ idToken: response.credential }, { redirect: false });
+      onLoginSuccess?.();
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao fazer login com Google');
+      setIsLoading(false);
+    }
+  }, [loginWithGoogle, onLoginSuccess, onClose]);
+
+  useEffect(() => {
+    // Inicializar Google Identity Services quando o modal abrir
+    if (isOpen) {
+      const initializeGoogleSignIn = () => {
+        if (window.google) {
+          window.google.accounts.id.initialize({
+            client_id: GOOGLE_CLIENT_ID,
+            callback: handleCredentialResponse,
+          });
+        }
+      };
+
+      // Verificar se o script do Google já foi carregado
+      if (window.google) {
+        initializeGoogleSignIn();
+      } else {
+        // Aguardar o script carregar
+        const checkGoogle = setInterval(() => {
+          if (window.google) {
+            initializeGoogleSignIn();
+            clearInterval(checkGoogle);
+          }
+        }, 100);
+
+        // Timeout de segurança
+        setTimeout(() => clearInterval(checkGoogle), 5000);
+      }
+    }
+  }, [isOpen, handleCredentialResponse]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,25 +85,13 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
     }
   };
 
-  const handleGoogleLogin = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
-      setError('');
-      setIsLoading(true);
-      try {
-        await loginWithGoogle({ token: tokenResponse.access_token }, { redirect: false });
-        onLoginSuccess?.();
-        onClose();
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Erro ao fazer login com Google');
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    onError: () => {
-      setError('Erro ao autenticar com Google');
-      setIsLoading(false);
-    },
-  });
+  const handleGoogleLogin = () => {
+    if (window.google && window.google.accounts) {
+      window.google.accounts.id.prompt();
+    } else {
+      setError('Google Sign-In não está disponível. Por favor, recarregue a página.');
+    }
+  };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Entrar">
@@ -116,7 +154,7 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
 
         <button
           type="button"
-          onClick={() => handleGoogleLogin()}
+          onClick={handleGoogleLogin}
           disabled={isLoading}
           className={`w-full mt-4 px-8 py-4 rounded-lg font-semibold text-lg transition-all flex items-center justify-center gap-3 ${
             isLoading
