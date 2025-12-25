@@ -5,20 +5,11 @@ import type {
   RegisterRequest,
   RegisterResponse,
   User,
-  GoogleLoginRequest,
-  GoogleLoginResponse,
 } from './types';
 
 export const authApi = {
   async login(data: LoginRequest): Promise<LoginResponse> {
     return apiClient.request<LoginResponse>('/users/login', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
-  async loginWithGoogle(data: GoogleLoginRequest): Promise<GoogleLoginResponse> {
-    return apiClient.request<GoogleLoginResponse>('/users/login/google', {
       method: 'POST',
       body: JSON.stringify(data),
     });

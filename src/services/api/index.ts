@@ -10,8 +10,6 @@ export { subscriptionsApi } from './subscriptions';
 export type {
   LoginRequest,
   LoginResponse,
-  GoogleLoginRequest,
-  GoogleLoginResponse,
   RegisterRequest,
   RegisterResponse,
   User,

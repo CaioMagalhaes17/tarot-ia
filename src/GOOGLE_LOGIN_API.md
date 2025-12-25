@@ -15,6 +15,7 @@ GOOGLE_CLIENT_ID=seu-google-client-id-aqui
 ```
 
 **Onde obter o Client ID:**
+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
 
 1. Acesse o [Google Cloud Console](https://console.cloud.google.com/)
 2. Crie um novo projeto ou selecione um existente
