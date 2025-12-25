@@ -3,11 +3,11 @@ import { TypewriterEffect } from '../../components/TypewriterEffect';
 
 export function Home() {
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="text-center mb-5">
-        <img src="/logo.png" alt="Tarot IA" className="w-[250px] object-contain mx-auto" />
+    <div className="max-w-4xl mx-auto relative top-[-40px]">
+      <div className="text-center">
+        <img src="/logo-natal.png" alt="Tarot IA" className="w-[300px] object-contain mx-auto " />
       </div>
-      <p className="mb-6 text-center text-purple-100 text-2xl font-bold min-h-[3rem] flex items-center justify-center">
+      <p className="mb-3 text-center text-purple-100 text-2xl font-bold min-h-[3rem] flex items-center justify-center">
         <TypewriterEffect
           texts={[
             'Que estilo de leitura de tarô você gostaria de fazer?',
@@ -58,19 +58,19 @@ export function Home() {
         </Link>
       </div>
       <div className="flex flex-col sm:flex-row gap-4 justify-center mt-10">
-          <Link
-            to="/tarot"
-            className="px-8 py-4 bg-purple-800 hover:bg-purple-900 text-white rounded-lg font-semibold text-lg transition-all transform hover:scale-105 shadow-lg"
-          >
-            Começar Leitura
-          </Link>
-          <Link
-            to="/subscriptions"
-            className="px-8 py-4 bg-white/10 hover:bg-white/20 text-white rounded-lg font-semibold text-lg transition-all backdrop-blur-sm border border-white/20"
-          >
-            Ver Planos
-          </Link>
-        </div>
+        <Link
+          to="/tarot"
+          className="px-8 py-4 bg-purple-800 hover:bg-purple-900 text-white rounded-lg font-semibold text-lg transition-all transform hover:scale-105 shadow-lg"
+        >
+          Começar Leitura
+        </Link>
+        <Link
+          to="/subscriptions"
+          className="px-8 py-4 bg-white/10 hover:bg-white/20 text-white rounded-lg font-semibold text-lg transition-all backdrop-blur-sm border border-white/20"
+        >
+          Ver Planos
+        </Link>
+      </div>
     </div>
   );
 }

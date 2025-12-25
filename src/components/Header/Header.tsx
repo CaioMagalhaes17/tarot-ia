@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { googleLogout } from '@react-oauth/google';
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -8,6 +9,7 @@ export function Header() {
 
   const handleLogout = () => {
     logout();
+    googleLogout()
   };
 
   return (
@@ -16,12 +18,12 @@ export function Header() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2 mt-10 group">
-            <img src="/logo.png" alt="Tarot IA" className="w-20 h-20" />
+            <img src="/logo-natal.png" alt="Tarot IA" className="w-30 h-30" />
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6 mt-6 text-xl">
-            
+
             <Link
               to="/tarot"
               className="text-purple-100 hover:text-white transition-colors font-medium"

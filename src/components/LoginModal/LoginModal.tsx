@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { Modal } from '../Modal/Modal';
+import { GoogleLogin } from '@react-oauth/google';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -14,7 +15,7 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,6 +34,22 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
       setIsLoading(false);
     }
   };
+
+  const handleLoginWithGoogle = async (accessToken: string) => {
+    setError('');
+    setIsLoading(true);
+    try {
+      await loginWithGoogle(accessToken, { redirect: false });
+      setEmail('');
+      setPassword('');
+      onLoginSuccess?.();
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao fazer login');
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
 
   return (
@@ -77,15 +94,27 @@ export function LoginModal({ isOpen, onClose, onLoginSuccess }: LoginModalProps)
         <button
           type="submit"
           disabled={isLoading}
-          className={`w-full px-8 py-4 rounded-lg font-semibold text-lg transition-all ${
-            isLoading
-              ? 'bg-purple-950/50 text-purple-400 cursor-not-allowed opacity-50'
-              : 'bg-purple-800 hover:bg-purple-900 text-white transform hover:scale-105 shadow-lg cursor-pointer'
-          }`}
+          className={`w-full px-8 py-4 rounded-lg font-semibold text-lg transition-all ${isLoading
+            ? 'bg-purple-950/50 text-purple-400 cursor-not-allowed opacity-50'
+            : 'bg-purple-800 hover:bg-purple-900 text-white transform hover:scale-105 shadow-lg cursor-pointer'
+            }`}
         >
           {isLoading ? 'Entrando...' : 'Entrar'}
         </button>
+        <div className="relative flex items-center mb-4">
+          <div className="flex-grow border-t border-purple-800/50"></div>
+          <span className="flex-shrink mx-4 text-purple-300 text-sm">ou</span>
+          <div className="flex-grow border-t border-purple-800/50"></div>
+        </div>
+        <div className='mr-auto ml-auto flex justify-center'>
+          <GoogleLogin onSuccess={
+            async (response) => await handleLoginWithGoogle(response.credential || '')
+          } onError={() => console.log('login failed')} width={'300px'} />
+        </div>
+
       </form>
+
+
 
       <div className="mt-6 text-center mb-4">
         <p className="text-purple-200">

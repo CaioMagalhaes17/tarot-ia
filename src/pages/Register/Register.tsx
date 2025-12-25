@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { GoogleLogin } from '@react-oauth/google';
 
 export function Register() {
   const [name, setName] = useState('');
@@ -9,7 +10,7 @@ export function Register() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { register } = useAuth();
+  const { register, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -37,6 +38,20 @@ export function Register() {
       setIsLoading(false);
     }
   };
+
+  const handleGoogleLogin = async (credential: string) => {
+    setError('');
+    setIsLoading(true);
+    try {
+      if (credential === '') throw new Error('Credencial de resposta do google não definida')
+      await loginWithGoogle(credential)
+      navigate('/');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao fazer login');
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   return (
     <div className="max-w-md mx-auto">
@@ -122,14 +137,33 @@ export function Register() {
           <button
             type="submit"
             disabled={isLoading}
-            className={`w-full px-8 py-4 rounded-lg font-semibold text-lg transition-all ${
-              isLoading
-                ? 'bg-purple-950/50 text-purple-400 cursor-not-allowed opacity-50'
-                : 'bg-purple-800 hover:bg-purple-900 text-white transform hover:scale-105 shadow-lg cursor-pointer'
-            }`}
+            className={`w-full px-8 py-4 rounded-lg font-semibold text-lg transition-all ${isLoading
+              ? 'bg-purple-950/50 text-purple-400 cursor-not-allowed opacity-50'
+              : 'bg-purple-800 hover:bg-purple-900 text-white transform hover:scale-105 shadow-lg cursor-pointer'
+              }`}
           >
             {isLoading ? 'Criando conta...' : 'Criar Conta'}
           </button>
+
+          <div className="px-4">
+            <div className="relative flex items-center mb-4">
+              <div className="flex-grow border-t border-purple-800/50"></div>
+              <span className="flex-shrink mx-4 text-purple-300 text-sm">ou</span>
+              <div className="flex-grow border-t border-purple-800/50"></div>
+            </div>
+
+
+            <GoogleLogin onSuccess={
+              async (response) => await handleGoogleLogin(response.credential || '')
+            }
+              onError={() => console.log('login failed')}
+              text='signup_with'
+              shape='circle'
+              auto_select={true}
+            />
+
+
+          </div>
         </form>
 
         <div className="mt-6 text-center">

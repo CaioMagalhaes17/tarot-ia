@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://anon-pix.fly.dev';
+const API_BASE_URL = 'http://localhost:3000';
 // http://localhost:3000
 // https://anon-pix.fly.dev
 
@@ -17,7 +17,7 @@ class ApiClient {
     options: RequestInit = {}
   ): Promise<T> {
     const token = this.getToken();
-    
+
     // Construir headers base
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -43,9 +43,9 @@ class ApiClient {
       console.warn('Token value:', token);
     }
 
-    console.log('Request headers:', { 
-      ...headers, 
-      Authorization: headers['Authorization'] ? 'Bearer ***' : 'none' 
+    console.log('Request headers:', {
+      ...headers,
+      Authorization: headers['Authorization'] ? 'Bearer ***' : 'none'
     });
 
     console.log(`Making request to: ${API_BASE_URL}${endpoint}`, {
@@ -76,7 +76,7 @@ class ApiClient {
         console.error('Error parsing error response:', parseError);
         errorData = { message: `Erro: ${response.statusText} (${response.status})` };
       }
-      
+
       const errorWithStatus = new Error(errorData.message || `Erro: ${response.statusText}`);
       (errorWithStatus as any).status = response.status;
       throw errorWithStatus;
