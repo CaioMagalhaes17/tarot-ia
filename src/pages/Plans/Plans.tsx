@@ -19,6 +19,33 @@ export function Plans() {
     loadPlans();
   }, []);
 
+  const loadPlans = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const promises: Promise<any>[] = [subscriptionsApi.getPlans()];
+
+      // Só tenta carregar assinatura atual se o usuário estiver autenticado
+      if (isAuthenticated) {
+        promises.push(subscriptionsApi.getCurrentSubscription());
+      }
+
+      const results = await Promise.all(promises);
+      setPlans(results[0]);
+
+      // Se o usuário estiver autenticado, define a assinatura atual
+      if (isAuthenticated && results[1] !== undefined) {
+        setCurrentSubscription(results[1]);
+      } else {
+        setCurrentSubscription(null);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao carregar planos');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [isAuthenticated]);
+
   useEffect(() => {
     // Quando o usuário fizer login, recarregar planos e processar assinatura pendente
     if (isAuthenticated && pendingPlan) {
@@ -29,7 +56,7 @@ export function Plans() {
         setIsSubscribing(true);
         setError(null);
         setSelectedPlanId(planId);
-        
+
         try {
           if (price === 0) {
             const response = await subscriptionsApi.subscribe({ planId });
@@ -50,37 +77,12 @@ export function Plans() {
           setPendingPlan(null);
         }
       };
-      
+
       processPendingSubscription();
     }
   }, [isAuthenticated, pendingPlan, loadPlans]);
 
-  const loadPlans = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const promises: Promise<any>[] = [subscriptionsApi.getPlans()];
-      
-      // Só tenta carregar assinatura atual se o usuário estiver autenticado
-      if (isAuthenticated) {
-        promises.push(subscriptionsApi.getCurrentSubscription());
-      }
-      
-      const results = await Promise.all(promises);
-      setPlans(results[0]);
-      
-      // Se o usuário estiver autenticado, define a assinatura atual
-      if (isAuthenticated && results[1] !== undefined) {
-        setCurrentSubscription(results[1]);
-      } else {
-        setCurrentSubscription(null);
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao carregar planos');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [isAuthenticated]);
+
 
   const formatPrice = (priceInCents: number) => {
     if (priceInCents === 0) return 'Gratuito';
@@ -111,7 +113,7 @@ export function Plans() {
     setIsSubscribing(true);
     setError(null);
     setSelectedPlanId(planId);
-    
+
     try {
       // Se for plano gratuito, não precisa de método de pagamento
       if (price === 0) {
@@ -217,7 +219,7 @@ export function Plans() {
               </div>
 
               <p className="text-purple-300 text-sm text-center max-w-2xl">
-                Após o pagamento, sua assinatura será ativada automaticamente. 
+                Após o pagamento, sua assinatura será ativada automaticamente.
                 Você receberá uma confirmação por email assim que o pagamento for processado.
               </p>
 
@@ -278,10 +280,10 @@ export function Plans() {
                   </p>
                   <p className="text-purple-300 text-sm mt-1">
                     Status: <span className="font-semibold text-white">
-                      {currentSubscription.status === 'ACTIVE' ? 'Ativa' : 
-                       currentSubscription.status === 'TRIAL' ? 'Período de Teste' :
-                       currentSubscription.status === 'PENDING_PAYMENT' ? 'Aguardando Pagamento' :
-                       'Inativa'}
+                      {currentSubscription.status === 'ACTIVE' ? 'Ativa' :
+                        currentSubscription.status === 'TRIAL' ? 'Período de Teste' :
+                          currentSubscription.status === 'PENDING_PAYMENT' ? 'Aguardando Pagamento' :
+                            'Inativa'}
                     </span>
                   </p>
                 </div>
@@ -305,18 +307,17 @@ export function Plans() {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {plans && plans.map((plan) => {
-                const isCurrentPlan = currentSubscription?.planId === plan.id && 
-                                     (currentSubscription.status === 'ACTIVE' || 
-                                      currentSubscription.status === 'TRIAL');
-                
+                const isCurrentPlan = currentSubscription?.planId === plan.id &&
+                  (currentSubscription.status === 'ACTIVE' ||
+                    currentSubscription.status === 'TRIAL');
+
                 return (
                   <div
                     key={plan.id}
-                    className={`backdrop-blur-sm rounded-lg p-8 border transition-all flex flex-col ${
-                      isCurrentPlan
-                        ? 'bg-purple-800/70 border-purple-500 ring-2 ring-purple-400'
-                        : 'bg-purple-900/50 border-purple-800/50 hover:border-purple-600/50 hover:transform hover:scale-105'
-                    }`}
+                    className={`backdrop-blur-sm rounded-lg p-8 border transition-all flex flex-col ${isCurrentPlan
+                      ? 'bg-purple-800/70 border-purple-500 ring-2 ring-purple-400'
+                      : 'bg-purple-900/50 border-purple-800/50 hover:border-purple-600/50 hover:transform hover:scale-105'
+                      }`}
                   >
                     {isCurrentPlan && (
                       <div className="mb-4 text-center">
@@ -372,13 +373,12 @@ export function Plans() {
                     </div>
 
                     <button
-                      className={`w-full px-6 cursor-pointer py-4 rounded-lg font-semibold text-lg transition-all ${
-                        isCurrentPlan
-                          ? 'bg-green-600 hover:bg-green-700 text-white'
-                          : isSubscribing && selectedPlanId === plan.id
+                      className={`w-full px-6 cursor-pointer py-4 rounded-lg font-semibold text-lg transition-all ${isCurrentPlan
+                        ? 'bg-green-600 hover:bg-green-700 text-white'
+                        : isSubscribing && selectedPlanId === plan.id
                           ? 'bg-purple-700 text-purple-300 cursor-not-allowed'
                           : 'bg-purple-800 hover:bg-purple-900 text-white transform hover:scale-105'
-                      }`}
+                        }`}
                       onClick={() => {
                         if (isCurrentPlan) {
                           return;
@@ -389,11 +389,11 @@ export function Plans() {
                     >
                       {isSubscribing && selectedPlanId === plan.id
                         ? 'Processando...'
-                        : isCurrentPlan 
-                        ? 'Plano Atual' 
-                        : plan.price === 0 
-                          ? 'Usar Plano Gratuito' 
-                          : 'Assinar Agora'
+                        : isCurrentPlan
+                          ? 'Plano Atual'
+                          : plan.price === 0
+                            ? 'Usar Plano Gratuito'
+                            : 'Assinar Agora'
                       }
                     </button>
                   </div>
