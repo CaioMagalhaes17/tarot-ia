@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { subscriptionsApi, type SubscriptionPlan, type Subscription, type SubscribeResponse } from '../../services/api';
+import { LoginModal } from '../../components/LoginModal';
 
 export function Plans() {
   const { isAuthenticated } = useAuth();
@@ -11,10 +12,48 @@ export function Plans() {
   const [isSubscribing, setIsSubscribing] = useState(false);
   const [subscribeResponse, setSubscribeResponse] = useState<SubscribeResponse | null>(null);
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [pendingPlan, setPendingPlan] = useState<{ planId: string; price: number } | null>(null);
 
   useEffect(() => {
     loadPlans();
   }, []);
+
+  useEffect(() => {
+    // Quando o usuário fizer login, recarregar planos e processar assinatura pendente
+    if (isAuthenticated && pendingPlan) {
+      const processPendingSubscription = async () => {
+        await loadPlans();
+        // Processar assinatura pendente após recarregar planos
+        const { planId, price } = pendingPlan;
+        setIsSubscribing(true);
+        setError(null);
+        setSelectedPlanId(planId);
+        
+        try {
+          if (price === 0) {
+            const response = await subscriptionsApi.subscribe({ planId });
+            setSubscribeResponse(response);
+            const subscription = await subscriptionsApi.getCurrentSubscription();
+            setCurrentSubscription(subscription);
+          } else {
+            const response = await subscriptionsApi.subscribe({
+              planId,
+              paymentMethod: 'PIX',
+            });
+            setSubscribeResponse(response);
+          }
+        } catch (err) {
+          setError(err instanceof Error ? err.message : 'Erro ao assinar plano');
+        } finally {
+          setIsSubscribing(false);
+          setPendingPlan(null);
+        }
+      };
+      
+      processPendingSubscription();
+    }
+  }, [isAuthenticated, pendingPlan, loadPlans]);
 
   const loadPlans = useCallback(async () => {
     setIsLoading(true);
@@ -62,9 +101,10 @@ export function Plans() {
   };
 
   const handleSubscribe = async (planId: string, price: number) => {
-    // Se não estiver autenticado, redirecionar para login
+    // Se não estiver autenticado, abrir modal de login e salvar plano pendente
     if (!isAuthenticated) {
-      window.location.href = '/login';
+      setPendingPlan({ planId, price });
+      setIsLoginModalOpen(true);
       return;
     }
 
@@ -332,9 +372,9 @@ export function Plans() {
                     </div>
 
                     <button
-                      className={`w-full px-6 py-4 rounded-lg font-semibold text-lg transition-all ${
+                      className={`w-full px-6 cursor-pointer py-4 rounded-lg font-semibold text-lg transition-all ${
                         isCurrentPlan
-                          ? 'bg-green-600 hover:bg-green-700 text-white cursor-default'
+                          ? 'bg-green-600 hover:bg-green-700 text-white'
                           : isSubscribing && selectedPlanId === plan.id
                           ? 'bg-purple-700 text-purple-300 cursor-not-allowed'
                           : 'bg-purple-800 hover:bg-purple-900 text-white transform hover:scale-105'
@@ -363,6 +403,19 @@ export function Plans() {
           </div>
         </div>
       )}
+
+      {/* Modal de Login */}
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => {
+          setIsLoginModalOpen(false);
+          setPendingPlan(null);
+        }}
+        onLoginSuccess={() => {
+          setIsLoginModalOpen(false);
+          // O useEffect vai processar a assinatura pendente
+        }}
+      />
     </div>
   );
 }

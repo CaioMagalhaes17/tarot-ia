@@ -246,9 +246,9 @@ export function PlansModal({ isOpen, onClose }: PlansModalProps) {
                         </div>
 
                         <button
-                          className={`w-full px-4 py-3 rounded-lg font-semibold transition-all ${
+                          className={`w-full px-4 py-3 rounded-lg font-semibold cursor-pointer transition-all ${
                             isCurrentPlan
-                              ? 'bg-green-600 hover:bg-green-700 text-white cursor-default'
+                              ? 'bg-green-600 hover:bg-green-700 text-white'
                               : 'bg-purple-800 hover:bg-purple-900 text-white transform hover:scale-105'
                           }`}
                           onClick={() => {
