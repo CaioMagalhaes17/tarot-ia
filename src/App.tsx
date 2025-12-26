@@ -8,6 +8,7 @@ import { Login } from './pages/Login/Login';
 import { Register } from './pages/Register/Register';
 import { SnowEffect } from './components/SnowEffect';
 import { Sessions } from './pages/Sessions';
+import { Plans } from './pages/Plans';
 
 function App() {
   return (
@@ -52,6 +53,14 @@ function App() {
           element={
             <DefaultLayout>
               <Sessions />
+            </DefaultLayout>
+          }
+        />
+        <Route
+          path="/subscriptions"
+          element={
+            <DefaultLayout>
+              <Plans />
             </DefaultLayout>
           }
         />
