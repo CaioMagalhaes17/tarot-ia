@@ -1,11 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { subscriptionsApi, type SubscriptionPlan, type Subscription, type SubscribeResponse } from '../../services/api';
 
 export function Plans() {
   const { isAuthenticated } = useAuth();
-  const navigate = useNavigate();
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [currentSubscription, setCurrentSubscription] = useState<Subscription | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -15,29 +13,35 @@ export function Plans() {
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/login');
-      return;
-    }
     loadPlans();
-  }, [isAuthenticated, navigate]);
+  }, []);
 
   const loadPlans = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const [plansData, subscription] = await Promise.all([
-        subscriptionsApi.getPlans(),
-        subscriptionsApi.getCurrentSubscription(),
-      ]);
-      setPlans(plansData);
-      setCurrentSubscription(subscription);
+      const promises: Promise<any>[] = [subscriptionsApi.getPlans()];
+      
+      // Só tenta carregar assinatura atual se o usuário estiver autenticado
+      if (isAuthenticated) {
+        promises.push(subscriptionsApi.getCurrentSubscription());
+      }
+      
+      const results = await Promise.all(promises);
+      setPlans(results[0]);
+      
+      // Se o usuário estiver autenticado, define a assinatura atual
+      if (isAuthenticated && results[1] !== undefined) {
+        setCurrentSubscription(results[1]);
+      } else {
+        setCurrentSubscription(null);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao carregar planos');
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [isAuthenticated]);
 
   const formatPrice = (priceInCents: number) => {
     if (priceInCents === 0) return 'Gratuito';
@@ -58,6 +62,12 @@ export function Plans() {
   };
 
   const handleSubscribe = async (planId: string, price: number) => {
+    // Se não estiver autenticado, redirecionar para login
+    if (!isAuthenticated) {
+      window.location.href = '/login';
+      return;
+    }
+
     setIsSubscribing(true);
     setError(null);
     setSelectedPlanId(planId);
@@ -90,10 +100,6 @@ export function Plans() {
     setSelectedPlanId(null);
     loadPlans();
   };
-
-  if (!isAuthenticated) {
-    return null;
-  }
 
   return (
     <div className="max-w-7xl mx-auto">
